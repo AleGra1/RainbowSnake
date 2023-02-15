@@ -61,3 +61,54 @@ class DQN(nn.Module):
     def load_checkpoint(self):
         print("Loading checkpoint from %s" % self.checkpoint_file)
         self.load_state_dict(T.load(self.checkpoint_file))
+
+class Agent():
+    def __init__(self, gamma, epsilon, lr, n_actions, input_dims, mem_size, batch_size, eps_min=0.1, eps_dec=5e-7, tau=1000, checkpoint_dir='checkpoints'):
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.lr = lr
+        self.n_actions = n_actions
+        self.input_dims = input_dims
+        self.mem_size = mem_size
+        self.batch_size = batch_size
+        self.eps_min = eps_min
+        self.eps_dec = eps_dec
+        self.tau = tau
+        self.checkpoint_dir = checkpoint_dir
+        self.action_space = np.arange(self.n_actions)
+
+        self.memory = ReplayBuffer(self.mem_size, self.input_dims)
+
+        self.dqn = DQN(self.lr, self.n_actions, 'dqn', self.input_dims, self.checkpoint_dir)
+        self.dqn_target = DQN(self.lr, self.n_actions, 'dqn_target', self.input_dims, self.checkpoint_dir)
+        self.dqn_target.load_state_dict(self.dqn.state_dict())
+        self.dqn_target.eval()
+
+    def choose_action(self, observation):
+        if np.random.random() > self.epsilon:
+            state = T.tensor(np.array(observation), dtype=T.float).to(self.dqn.device)
+            _, advantage = self.dqn.forward(state)
+            action = T.argmax(advantage).item()
+            return action
+        return np.random.choice(self.action_space)
+
+    def store_transition(self, state, action, state_, reward, done):
+        self.memory.store_transition(state, action, state_, reward, done)
+
+    def replace_target_network(self):
+        if self.learn_step_counter % self.tau == 0:
+            self.dqn_target.load_state_dict(self.dqn.state_dict())
+
+    def decrement_epsilon(self):
+        self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
+
+    def save_models(self):
+        self.dqn.save_checkpoint()
+        self.dqn_target.save_checkpoint()
+
+    def load_models(self):
+        self.dqn.load_checkpoint()
+        self.dqn_target.load_checkpoint()
+
+    def learn(self):
+        pass
