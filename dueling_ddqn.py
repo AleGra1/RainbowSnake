@@ -61,7 +61,7 @@ class DuelingDDQN(nn.Module):
                                nn.Linear(512, 1))
 
         self.optimizer = optim.Adam(self.parameters(), lr=lr)
-        self.loss = nn.MSELoss()
+        self.loss = nn.SmoothL1Loss()
         self.to(self.device)
 
     def forward(self, state):
