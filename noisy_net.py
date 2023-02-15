@@ -97,6 +97,11 @@ class NoisyLinear(nn.Module):
 class NoisyNetwork(nn.Module):
     def __init__(self, n_actions, name, input_dims, checkpoint_dir):
         super(NoisyNetwork, self).__init__()
+        
+        self.checkpoint_dir = checkpoint_dir
+        self.checkpoint_file = os.path.join(checkpoint_dir, name)
+        
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 
         self.network = nn.Sequential(nn.Linear(*input_dims, 128),
                                      nn.ReLU(),
@@ -105,6 +110,7 @@ class NoisyNetwork(nn.Module):
                                      NoisyLinear(128, n_actions))
         self.optimizer = optim.Adam(self.parameters())
         self.loss = nn.SmoothL1Loss()
+        self.to(self.device)
 
     def forward(self, state):
         return self.network(state)
