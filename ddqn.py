@@ -56,7 +56,7 @@ class DDQN(nn.Module):
                             nn.Linear(512, 1))
         
         self.optimizer = optim.Adam(self.parameters(), lr=lr)
-        self.loss = nn.HuberLoss()
+        self.loss = nn.MSELoss()
         self.to(self.device)
 
     def forward(self, state):
