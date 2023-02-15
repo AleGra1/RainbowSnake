@@ -145,7 +145,7 @@ class Agent():
         mask = ~dones
         target = (rewards + self.gamma * next_q_value *
                   mask).to(self.dqn.device)
-        
+
         loss = self.dqn.loss(curr_q_value, target).to(self.dqn.device)
         loss.backward()
         self.dqn.optimizer.step()

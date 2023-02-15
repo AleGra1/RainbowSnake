@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
 import numpy as np
 import matplotlib.pyplot as plt
-from dqn import Agent
+from ddqn import Agent
 import gym_snake
 
 
@@ -22,13 +22,14 @@ def plot_learning_curve(xs, scores, eps_history, avg_scores, filename):
     color2 = plt.cm.viridis(0.5)
 
     #p1 = host.scatter(xs, scores, color=color1, label="Score")
-    p1, = host.plot(xs, avg_scores, color=color1, label="Avg Score last 100 games")
+    p1, = host.plot(xs, avg_scores, color=color1,
+                    label="Avg Score last 100 games")
     p2, = par1.plot(xs, eps_history, color=color2, label="Epsilon")
 
     lns = [p1, p2]
     host.legend(handles=lns, loc='best')
 
-    #host.yaxis.label.set_color(p1.get_color())
+    # host.yaxis.label.set_color(p1.get_color())
     par1.yaxis.label.set_color(p2.get_color())
 
     fig.tight_layout()
@@ -36,9 +37,9 @@ def plot_learning_curve(xs, scores, eps_history, avg_scores, filename):
 
 
 def build_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma=0.99, epsilon=1.0, lr=5e-4, n_actions=5, mem_size=1000000, eps_min=0.01, batch_size=64, eps_dec=1e-3, tau=100, plot_filename='snake-DDQN.png', num_episodes=500, load_checkpoint=False):
-    if model_name=='gym_snake/Snake-v0':
+    if model_name == 'gym_snake/Snake-v0':
         env = FlattenObservation(gym.make(model_name, render_mode=None, width=width,
-                             height=height, window_width=500, window_height=500, fps=fps))
+                                          height=height, window_width=500, window_height=500, fps=fps))
     else:
         env = gym.make(model_name)
 
@@ -80,9 +81,9 @@ def build_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamm
 
 
 def demo_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma=0.99, epsilon=1.0, lr=5e-4, n_actions=5, mem_size=1000000, eps_min=0.01, batch_size=64, eps_dec=1e-3, tau=100, num_episodes=500):
-    if model_name=='gym_snake/Snake-v0':
+    if model_name == 'gym_snake/Snake-v0':
         env = FlattenObservation(gym.make(model_name, render_mode="human", width=width,
-                             height=height, window_width=500, window_height=500, fps=fps))
+                                          height=height, window_width=500, window_height=500, fps=fps))
     else:
         env = gym.make(model_name, render_mode="human")
 
@@ -102,7 +103,6 @@ def demo_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma
             observation, reward, done, _, _ = env.step(action)
             score += reward
         print(score)
-            
 
 
 if __name__ == '__main__':
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     plot_filename = 'snake-DDQN.png'
     num_episodes = 3000
     showcase_episodes = 10
-    
+
     if load_checkpoint:
         epsilon = eps_min
 

@@ -95,9 +95,9 @@ class Agent():
         self.memory = ReplayBuffer(self.mem_size, self.input_dims)
 
         self.q_eval = DuelingDDQN(self.lr, self.n_actions, name='snake_eval',
-                           input_dims=self.input_dims, checkpoint_dir=self.checkpoint_dir)
+                                  input_dims=self.input_dims, checkpoint_dir=self.checkpoint_dir)
         self.q_next = DuelingDDQN(self.lr, self.n_actions, name='snake_next',
-                           input_dims=self.input_dims, checkpoint_dir=self.checkpoint_dir)
+                                  input_dims=self.input_dims, checkpoint_dir=self.checkpoint_dir)
 
     def choose_action(self, observation):
         if np.random.random() > self.epsilon:
