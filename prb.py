@@ -40,8 +40,8 @@ class ReplayBuffer():
 
 
 class PrioritizedReplayBuffer(ReplayBuffer):
-    def __init__(self, input_shape, max_size, batch_size=32, alpha=0.6):
-        super(PrioritizedReplayBuffer, self).__init__(max_size, input_shape)
+    def __init__(self, input_dims, max_size, batch_size=32, alpha=0.6):
+        super(PrioritizedReplayBuffer, self).__init__(max_size, input_dims)
         self.batch_size = batch_size
         self.max_priority, self.tree_ptr = 1.0, 0
         self.alpha = alpha
@@ -68,7 +68,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         rewards = T.tensor(self.reward_memory[indices])
         states_ = T.tensor(self.new_state_memory[indices])
         dones = T.tensor(self.done_memory[indices], dtype=T.bool)
-        weights = np.array([self._calculate_weight(i, beta) for i in indices])
+        weights = T.tensor([self._calculate_weight(i, beta) for i in indices], dtype=T.float32)
 
         return states, actions, rewards, states_, dones, weights, indices
 
@@ -81,24 +81,24 @@ class PrioritizedReplayBuffer(ReplayBuffer):
 
     def _sample_proportional(self):
         indices = []
-        p_total = self.sum_tree.sum(0, len(self) - 1)
+        p_total = self.sum_tree.sum(0, min(self.mem_counter+1, self.max_size) - 1)
         segment = p_total / self.batch_size
 
         for i in range(self.batch_size):
             a = segment * i
             b = segment * (i + 1)
             upperbound = random.uniform(a, b)
-            idx = self.sum_tree.retrieve(upperbound)
+            idx = self.sum_tree.find_prefixsum_idx(upperbound)
             indices.append(idx)
 
         return indices
 
     def _calculate_weight(self, idx, beta):
         p_min = self.min_tree.min() / self.sum_tree.sum()
-        max_weight = (p_min * len(self)) ** (-beta)
+        max_weight = (p_min * min(self.mem_counter+1, self.max_size)) ** (-beta)
 
         p_sample = self.sum_tree[idx] / self.sum_tree.sum()
-        weight = (p_sample * len(self)) ** (-beta)
+        weight = (p_sample * min(self.mem_counter+1, self.max_size)) ** (-beta)
         weight = weight / max_weight
 
         return weight
