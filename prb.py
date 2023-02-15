@@ -64,7 +64,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         self.min_tree[self.tree_ptr] = self.max_priority ** self.alpha
         self.tree_ptr = (self.tree_ptr + 1) % self.max_size
 
-    def sample(self, beta: float = 0.4):
+    def sample(self, beta):
         indices = self._sample_proportional()
 
         states = T.tensor(self.state_memory[indices])
@@ -97,12 +97,10 @@ class PrioritizedReplayBuffer(ReplayBuffer):
 
         return indices
 
-    def _calculate_weight(self, idx: int, beta: float):
-        # get max weight
+    def _calculate_weight(self, idx, beta):
         p_min = self.min_tree.min() / self.sum_tree.sum()
         max_weight = (p_min * len(self)) ** (-beta)
 
-        # calculate weights
         p_sample = self.sum_tree[idx] / self.sum_tree.sum()
         weight = (p_sample * len(self)) ** (-beta)
         weight = weight / max_weight
