@@ -49,12 +49,12 @@ class NoisyLinear(nn.Module):
         self.n_actions = n_actions
         self.std_init = std_init
 
-        self.weight_mu = nn.Parameter(T.Tensor(n_actions, *input_dims))
+        self.weight_mu = nn.Parameter(T.Tensor(n_actions, input_dims))
         self.weight_sigma = nn.Parameter(
-            T.Tensor(n_actions, *input_dims)
+            T.Tensor(n_actions, input_dims)
         )
         self.register_buffer(
-            "weight_epsilon", T.Tensor(n_actions, *input_dims)
+            "weight_epsilon", T.Tensor(n_actions, input_dims)
         )
 
         self.bias_mu = nn.Parameter(T.Tensor(n_actions))
@@ -65,10 +65,10 @@ class NoisyLinear(nn.Module):
         self.reset_noise()
 
     def reset_parameters(self):
-        mu_range = 1 / math.sqrt(len(self.input_dims).flatten())
+        mu_range = 1 / math.sqrt(self.input_dims)
         self.weight_mu.data.uniform_(-mu_range, mu_range)
         self.weight_sigma.data.fill_(
-            self.std_init / math.sqrt(len(self.input_dims).flatten())
+            self.std_init / math.sqrt(self.input_dims)
         )
         self.bias_mu.data.uniform_(-mu_range, mu_range)
         self.bias_sigma.data.fill_(
@@ -76,7 +76,7 @@ class NoisyLinear(nn.Module):
         )
 
     def reset_noise(self):
-        epsilon_in = self.scale_noise(len(self.input_dims).flatten())
+        epsilon_in = self.scale_noise(self.input_dims)
         epsilon_out = self.scale_noise(self.n_actions)
 
         self.weight_epsilon.copy_(epsilon_out.ger(epsilon_in))
@@ -98,16 +98,18 @@ class NoisyNetwork(nn.Module):
     def __init__(self, n_actions, name, input_dims, checkpoint_dir):
         super(NoisyNetwork, self).__init__()
         
+        self.n_actions = n_actions
+        self.input_dims = input_dims
         self.checkpoint_dir = checkpoint_dir
         self.checkpoint_file = os.path.join(checkpoint_dir, name)
         
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 
-        self.network = nn.Sequential(nn.Linear(*input_dims, 128),
+        self.network = nn.Sequential(nn.Linear(*self.input_dims, 128),
                                      nn.ReLU(),
                                      NoisyLinear(128, 128),
                                      nn.ReLU(),
-                                     NoisyLinear(128, n_actions))
+                                     NoisyLinear(128, self.n_actions))
         self.optimizer = optim.Adam(self.parameters())
         self.loss = nn.SmoothL1Loss()
         self.to(self.device)

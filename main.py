@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
 import numpy as np
 import matplotlib.pyplot as plt
-from ddqn import Agent
+from dqn2 import Agent
 import gym_snake
 
 
