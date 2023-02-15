@@ -1,10 +1,6 @@
-import os
 import random
 import numpy as np
-import torch.nn as nn
 import torch as T
-import torch.nn.functional as F
-import torch.optim as optim
 from segment_tree import MinSegmentTree, SumSegmentTree
 
 
