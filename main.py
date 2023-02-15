@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
 import numpy as np
 import matplotlib.pyplot as plt
-from ddqn import Agent
+from dqn import Agent
 import gym_snake
 
 
@@ -107,7 +107,7 @@ def demo_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma
 
 if __name__ == '__main__':
     do_training = True
-    show_demo = True
+    show_demo = False
     load_checkpoint = False
     #model_name = 'LunarLander-v2'
     model_name = 'gym_snake/Snake-v0'
