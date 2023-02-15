@@ -63,7 +63,7 @@ class DQN(nn.Module):
         self.load_state_dict(T.load(self.checkpoint_file))
 
 class Agent():
-    def __init__(self, env, gamma, epsilon, lr, n_actions, input_dims, mem_size, batch_size, eps_min=0.1, eps_dec=5e-7, tau=1000, checkpoint_dir='checkpoints'):
+    def __init__(self, gamma, epsilon, lr, n_actions, input_dims, mem_size, batch_size, eps_min=0.1, eps_dec=5e-7, tau=1000, checkpoint_dir='checkpoints'):
         self.gamma = gamma
         self.epsilon = epsilon
         self.lr = lr
@@ -76,7 +76,6 @@ class Agent():
         self.tau = tau
         self.checkpoint_dir = checkpoint_dir
         self.action_space = np.arange(self.n_actions)
-        self.env = env
 
         self.memory = ReplayBuffer(self.mem_size, self.input_dims)
 
@@ -111,7 +110,7 @@ class Agent():
         self.dqn.load_checkpoint()
         self.dqn_target.load_checkpoint()
 
-    def learn(self, num_frames=2):
+    def learn(self):
         if self.memory.mem_counter < self.batch_size:
             return
         
