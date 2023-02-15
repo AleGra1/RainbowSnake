@@ -58,7 +58,6 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         self.min_tree = MinSegmentTree(tree_capacity)
 
     def store_transition(self, state, action, state_, reward, done):
-        """Store experience and priority."""
         super().store_transition(state, action, state_, reward, done)
 
         self.sum_tree[self.tree_ptr] = self.max_priority ** self.alpha
@@ -66,7 +65,6 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         self.tree_ptr = (self.tree_ptr + 1) % self.max_size
 
     def sample(self, beta: float = 0.4):
-        """Sample a batch of experiences."""
         indices = self._sample_proportional()
 
         states = T.tensor(self.state_memory[indices])
