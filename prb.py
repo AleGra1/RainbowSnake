@@ -59,7 +59,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
 
     def store_transition(self, state, action, state_, reward, done):
         """Store experience and priority."""
-        super().store(state, action, state_, reward, done)
+        super().store_transition(state, action, state_, reward, done)
 
         self.sum_tree[self.tree_ptr] = self.max_priority ** self.alpha
         self.min_tree[self.tree_ptr] = self.max_priority ** self.alpha
