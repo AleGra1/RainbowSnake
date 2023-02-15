@@ -41,9 +41,9 @@ class ReplayBuffer():
         return states, actions, rewards, states_, dones
 
 
-class DDQN(nn.Module):
+class DuelingDDQN(nn.Module):
     def __init__(self, lr, n_actions, name, input_dims, checkpoint_dir):
-        super(DDQN, self).__init__()
+        super(DuelingDDQN, self).__init__()
         self.checkpoint_dir = checkpoint_dir
         self.checkpoint_file = os.path.join(checkpoint_dir, name)
 
@@ -94,9 +94,9 @@ class Agent():
 
         self.memory = ReplayBuffer(self.mem_size, self.input_dims)
 
-        self.q_eval = DDQN(self.lr, self.n_actions, name='snake_eval',
+        self.q_eval = DuelingDDQN(self.lr, self.n_actions, name='snake_eval',
                            input_dims=self.input_dims, checkpoint_dir=self.checkpoint_dir)
-        self.q_next = DDQN(self.lr, self.n_actions, name='snake_next',
+        self.q_next = DuelingDDQN(self.lr, self.n_actions, name='snake_next',
                            input_dims=self.input_dims, checkpoint_dir=self.checkpoint_dir)
 
     def choose_action(self, observation):
