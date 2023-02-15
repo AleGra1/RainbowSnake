@@ -111,7 +111,7 @@ class Agent():
         self.dqn.load_checkpoint()
         self.dqn_target.load_checkpoint()
 
-    def learn(self):
+    def learn(self, num_frames=2):
         if self.memory.mem_counter < self.batch_size:
             return
         
