@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
 import numpy as np
 import matplotlib.pyplot as plt
-from dqn4 import Agent
+from rainbow import Agent
 import gym_snake
 
 
@@ -78,7 +78,8 @@ def build_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamm
         eps_history.append(agent.epsilon)
     xs = np.arange(num_episodes)
     plot_learning_curve(xs, scores, eps_history, avg_scores, plot_filename)
-    
+
+
 def build_model_prb(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma=0.99, epsilon=1.0, lr=5e-4, n_actions=5, mem_size=1000000, eps_min=0.01, batch_size=64, eps_dec=1e-3, tau=100, plot_filename='snake-DDQN.png', num_episodes=500, load_checkpoint=False):
     if model_name == 'gym_snake/Snake-v0':
         env = FlattenObservation(gym.make(model_name, render_mode=None, width=width,
@@ -122,6 +123,7 @@ def build_model_prb(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, 
     xs = np.arange(num_episodes)
     plot_learning_curve(xs, scores, eps_history, avg_scores, plot_filename)
 
+
 def build_model_nstep(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma=0.99, epsilon=1.0, lr=5e-4, n_actions=5, mem_size=1000000, eps_min=0.01, batch_size=64, eps_dec=1e-3, tau=100, plot_filename='snake-DDQN.png', num_episodes=500, load_checkpoint=False, n_step=4):
     if model_name == 'gym_snake/Snake-v0':
         env = FlattenObservation(gym.make(model_name, render_mode=None, width=width,
@@ -162,6 +164,53 @@ def build_model_nstep(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10
             agent.save_models()
 
         eps_history.append(agent.epsilon)
+    xs = np.arange(num_episodes)
+    plot_learning_curve(xs, scores, eps_history, avg_scores, plot_filename)
+
+
+def build_model_rainbow(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma=0.99, n_actions=5, mem_size=1000000, batch_size=64, tau=100, plot_filename='snake-DDQN.png', num_episodes=500, load_checkpoint=False, n_step=4, alpha=0.2, beta=0.6, eps_prior=1e-6, v_min=0.0, v_max=200.0, atom_size=51, num_frames=100000):
+    if model_name == 'gym_snake/Snake-v0':
+        env = FlattenObservation(gym.make(model_name, render_mode=None, width=width,
+                                          height=height, window_width=500, window_height=500, fps=fps))
+    else:
+        env = gym.make(model_name)
+
+    agent = Agent(mem_size=mem_size, batch_size=batch_size, n_actions=n_actions, input_dims=env.observation_space.shape, tau=tau,
+                  gamma=gamma, alpha=alpha, beta=beta, eps_prior=eps_prior, v_min=v_min, v_max=v_max, atom_size=atom_size, n_step=n_step)
+
+    if load_checkpoint:
+        agent.load_models()
+
+    scores, eps_history, avg_scores = [], [], []
+
+    for i in range(num_episodes):
+        done = False
+        observation, _ = env.reset()
+        score = 0
+        frame_idx = 1
+
+        while not done:
+            action = agent.choose_action(observation)
+            observation_, reward, done, _, _ = env.step(action)
+            
+            fraction = min(frame_idx / num_frames, 1.0)
+            score += reward
+            agent.store_transition(observation, action,
+                                   observation_, reward, done)
+
+            agent.learn(fraction)
+            observation = observation_
+            frame_idx += 1
+
+        scores.append(score)
+        avg_score = np.mean(scores[-100:])
+        avg_scores.append(avg_score)
+        print("Episode", i, "score %.2f" % score, "avg_score %.2f" %
+              avg_score)
+        if i >= 10 and i % 10 == 0:
+            agent.save_models()
+
+        eps_history.append(1.0)
     xs = np.arange(num_episodes)
     plot_learning_curve(xs, scores, eps_history, avg_scores, plot_filename)
 
@@ -216,8 +265,8 @@ if __name__ == '__main__':
         epsilon = eps_min
 
     if do_training:
-        build_model_nstep(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=epsilon, lr=lr, n_actions=n_actions, mem_size=mem_size,
-                    eps_min=eps_min, batch_size=batch_size, eps_dec=eps_dec, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint, n_step=4)
+        build_model_rainbow(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, n_actions=n_actions, mem_size=mem_size,
+                            batch_size=batch_size, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint, n_step=4)
 
     if show_demo:
         demo_model(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=0.0, lr=lr, n_actions=n_actions,
