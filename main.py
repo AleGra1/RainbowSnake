@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
 import numpy as np
 import matplotlib.pyplot as plt
-from categorical_dqn import Agent
+from dqn4 import Agent
 import gym_snake
 
 
@@ -122,6 +122,49 @@ def build_model_prb(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, 
     xs = np.arange(num_episodes)
     plot_learning_curve(xs, scores, eps_history, avg_scores, plot_filename)
 
+def build_model_nstep(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma=0.99, epsilon=1.0, lr=5e-4, n_actions=5, mem_size=1000000, eps_min=0.01, batch_size=64, eps_dec=1e-3, tau=100, plot_filename='snake-DDQN.png', num_episodes=500, load_checkpoint=False, n_step=4):
+    if model_name == 'gym_snake/Snake-v0':
+        env = FlattenObservation(gym.make(model_name, render_mode=None, width=width,
+                                          height=height, window_width=500, window_height=500, fps=fps))
+    else:
+        env = gym.make(model_name)
+
+    agent = Agent(gamma=gamma, epsilon=epsilon, lr=lr, input_dims=env.observation_space.shape,
+                  n_actions=n_actions, mem_size=mem_size, eps_min=eps_min, batch_size=batch_size, eps_dec=eps_dec, tau=tau, n_step=n_step)
+
+    if load_checkpoint:
+        agent.load_models()
+
+    scores, eps_history, avg_scores = [], [], []
+
+    for i in range(num_episodes):
+        done = False
+        observation, _ = env.reset()
+        score = 0
+
+        while not done:
+            action = agent.choose_action(observation)
+            observation_, reward, done, _, _ = env.step(action)
+
+            score += reward
+            agent.store_transition(observation, action,
+                                   observation_, reward, done)
+
+            agent.learn()
+            observation = observation_
+
+        scores.append(score)
+        avg_score = np.mean(scores[-100:])
+        avg_scores.append(avg_score)
+        print("Episode", i, "score %.2f" % score, "avg_score %.2f" %
+              avg_score, "epsilon %.2f" % agent.epsilon)
+        if i >= 10 and i % 10 == 0:
+            agent.save_models()
+
+        eps_history.append(agent.epsilon)
+    xs = np.arange(num_episodes)
+    plot_learning_curve(xs, scores, eps_history, avg_scores, plot_filename)
+
 
 def demo_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma=0.99, epsilon=1.0, lr=5e-4, n_actions=5, mem_size=1000000, eps_min=0.01, batch_size=64, eps_dec=1e-3, tau=100, num_episodes=500):
     if model_name == 'gym_snake/Snake-v0':
@@ -173,8 +216,8 @@ if __name__ == '__main__':
         epsilon = eps_min
 
     if do_training:
-        build_model(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=epsilon, lr=lr, n_actions=n_actions, mem_size=mem_size,
-                    eps_min=eps_min, batch_size=batch_size, eps_dec=eps_dec, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint)
+        build_model_nstep(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=epsilon, lr=lr, n_actions=n_actions, mem_size=mem_size,
+                    eps_min=eps_min, batch_size=batch_size, eps_dec=eps_dec, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint, n_step=4)
 
     if show_demo:
         demo_model(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=0.0, lr=lr, n_actions=n_actions,
