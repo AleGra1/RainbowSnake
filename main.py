@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
 import numpy as np
 import matplotlib.pyplot as plt
-from rainbow import Agent
+from dqn4 import Agent
 import gym_snake
 
 
@@ -265,8 +265,11 @@ if __name__ == '__main__':
         epsilon = eps_min
 
     if do_training:
-        build_model_rainbow(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, n_actions=n_actions, mem_size=mem_size,
-                            batch_size=batch_size, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint, n_step=4)
+        #build_model_rainbow(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, n_actions=n_actions, mem_size=mem_size,
+        #                    batch_size=batch_size, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint, n_step=4, num_frames=10000)
+        
+        build_model_nstep(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, n_actions=n_actions, mem_size=mem_size,
+                            batch_size=batch_size, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint, n_step=3)
 
     if show_demo:
         demo_model(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=0.0, lr=lr, n_actions=n_actions,
