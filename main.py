@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
 import numpy as np
 import matplotlib.pyplot as plt
-from dqn3 import Agent
+from categorical_dqn import Agent
 import gym_snake
 
 
@@ -152,7 +152,6 @@ if __name__ == '__main__':
     do_training = True
     show_demo = False
     load_checkpoint = False
-    #model_name = 'LunarLander-v2'
     model_name = 'gym_snake/Snake-v0'
     width = 5
     height = 5
@@ -174,7 +173,7 @@ if __name__ == '__main__':
         epsilon = eps_min
 
     if do_training:
-        build_model_prb(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=epsilon, lr=lr, n_actions=n_actions, mem_size=mem_size,
+        build_model(model_name=model_name, width=width, height=height, fps=fps, gamma=gamma, epsilon=epsilon, lr=lr, n_actions=n_actions, mem_size=mem_size,
                     eps_min=eps_min, batch_size=batch_size, eps_dec=eps_dec, tau=tau, plot_filename=plot_filename, num_episodes=num_episodes, load_checkpoint=load_checkpoint)
 
     if show_demo:
