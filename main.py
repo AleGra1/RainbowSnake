@@ -256,7 +256,7 @@ if __name__ == '__main__':
     eps_min = 0.01
     batch_size = 64
     eps_dec = 1e-3
-    tau = 1000
+    tau = 100
     plot_filename = 'snake-DDQN.png'
     num_episodes = 3000
     showcase_episodes = 10

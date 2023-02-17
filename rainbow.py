@@ -235,3 +235,6 @@ class Agent:
         # NoisyNet: reset noise
         self.dqn.reset_noise()
         self.dqn_target.reset_noise()
+                
+        self.replace_target_network()
+        self.learn_step_counter += 1       
