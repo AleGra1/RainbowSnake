@@ -133,8 +133,7 @@ class Agent():
                   mask).to(self.dqn.device)
 
         loss += self.dqn.loss(curr_q_value, target).to(self.dqn.device)
-        
-        
+                
         self.dqn.optimizer.zero_grad()
         loss.backward()        
         self.dqn.optimizer.step()

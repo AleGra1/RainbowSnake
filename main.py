@@ -193,7 +193,7 @@ def demo_model(model_name='gym_snake/Snake-v0', width=5, height=5, fps=10, gamma
 
 if __name__ == '__main__':
     do_training = True
-    show_demo = False
+    show_demo = True
     load_checkpoint = False
     model_name = 'gym_snake/Snake-v0'
     width = 5
